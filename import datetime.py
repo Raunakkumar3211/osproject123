@@ -1,107 +1,285 @@
-import datetime
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garbage Collection Simulator</title>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #e74c3c;
+            --background: #2c3e50;
+            --text: #ecf0f1;
+        }
 
-# Bride and Groom Details
-bride = {
-    "name": "Priya Sharma",
-    "age": 24,
-    "family": "Sharma Family"
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
 
-groom = {
-    "name": "Rahul Verma",
-    "age": 26,
-    "family": "Verma Family"
-}
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #34495e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
 
-# Wedding Event Details
-events = {
-    "marriage": {
-        "title": "Marriage Ceremony",
-        "date": "12-April-2025",
-        "time": "7:00 PM",
-        "venue": "Royal Palace, Delhi"
-    },
-    "haldi": {
-        "title": "Haldi Function",
-        "date": "10-April-2025",
-        "time": "10:00 AM",
-        "venue": "Bride's Residence"
-    },
-    "mehendi": {
-        "title": "Mehendi Function",
-        "date": "11-April-2025",
-        "time": "3:00 PM",
-        "venue": "Groom's Residence"
-    },
-    "ring ceremony": {
-        "title": "Ring Ceremony",
-        "date": "09-April-2025",
-        "time": "6:00 PM",
-        "venue": "Taj Banquet Hall"
-    }
-}
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
 
-# History of Searches
-search_log = {}
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
 
-# Function to simulate chatbot response
-def chatbot_response(user_input):
-    user_input = user_input.lower().strip()
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: #43586d;
+            color: var(--text);
+            font-size: 16px;
+        }
 
-    if user_input == "bride":
-        return f"👰 Bride: {bride['name']}, Age: {bride['age']}, Family: {bride['family']}"
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, opacity 0.2s;
+        }
 
-    elif user_input == "groom":
-        return f"🤵 Groom: {groom['name']}, Age: {groom['age']}, Family: {groom['family']}"
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
 
-    elif user_input in events:
-        now = datetime.datetime.now()
-        event = events[user_input]
+        #allocateBtn {
+            background: var(--primary);
+            color: white;
+        }
+
+        #gcBtn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .memory-status {
+            background: #43586d;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .memory-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            min-height: 60px;
+            padding: 10px;
+            background: #2c3e50;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .memory-block {
+            padding: 8px 12px;
+            border-radius: 4px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.9em;
+            animation: appear 0.3s ease;
+            transition: transform 0.2s;
+        }
+
+        .memory-block:hover {
+            transform: scale(1.05);
+        }
+
+        .history-log {
+            background: #43586d;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #historyEntries {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: #2c3e50;
+            border-radius: 4px;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+
+        .log-entry.allocation {
+            border-left: 4px solid var(--primary);
+        }
+
+        .log-entry.gc {
+            border-left: 4px solid var(--secondary);
+        }
+
+        @keyframes appear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 15px;
+            background: #43586d;
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ Garbage Collection Simulator</h1>
         
-        # Update history
-        if user_input not in search_log:
-            search_log[user_input] = []
-        search_log[user_input].append(now)
-        
-        response = f"""
-📅 {event['title']} Details:
-📍 Venue : {event['venue']}
-📆 Date  : {event['date']}
-🕓 Time  : {event['time']}
+        <div class="controls">
+            <input type="number" id="size" placeholder="Memory size in bytes" min="1">
+            <button id="allocateBtn" onclick="allocateMemory()">Allocate Memory</button>
+            <button id="gcBtn" onclick="garbageCollect()">Run GC</button>
+        </div>
 
-📘 Search History:
-🔁 Searched {len(search_log[user_input])} time(s)
-🕒 Last searched: {now.strftime('%d-%b-%Y %I:%M:%S %p')}
-"""
-        return response.strip()
-    
-    elif user_input == "help":
-        return "🔎 You can ask about: bride, groom, marriage, haldi, mehendi, ring ceremony.\nType 'exit' to quit."
+        <div class="memory-status">
+            <h2>Memory Status</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalBlocks">0</div>
+                    <div>Blocks Allocated</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalMemory">0 B</div>
+                    <div>Total Memory</div>
+                </div>
+            </div>
+            <div class="memory-pool" id="memoryPool"></div>
+        </div>
 
-    elif user_input == "history":
-        if not search_log:
-            return "📘 No events have been searched yet."
-        history_text = "📘 Search History:\n"
-        for event, times in search_log.items():
-            last_time = times[-1].strftime('%d-%b-%Y %I:%M:%S %p')
-            history_text += f"🔸 {event.title()}: {len(times)} times, last on {last_time}\n"
-        return history_text.strip()
+        <div class="history-log">
+            <h2>Operation History</h2>
+            <div id="historyEntries"></div>
+        </div>
+    </div>
 
-    elif user_input == "exit":
-        return None  # To end the loop
+    <script>
+        let memoryPool = [];
+        let allocatedMemory = 0;
+        let historyLog = [];
 
-    else:
-        return "❌ Sorry, I didn't understand that. Type 'help' to see options."
+        function allocateMemory() {
+            const sizeInput = document.getElementById('size');
+            const size = parseInt(sizeInput.value);
+            
+            if (isNaN(size) || size <= 0) {
+                alert("Please enter a valid memory size.");
+                return;
+            }
 
-# Chatbot Welcome Message
-print("💬 Welcome to the Wedding Chatbot!")
-print("Type 'help' to see available commands.\n")
+            // Add to memory pool
+            memoryPool.push(size);
+            allocatedMemory += size;
+            
+            // Add to history
+            historyLog.push({
+                type: 'allocation',
+                size: size,
+                timestamp: new Date(),
+                totalMemory: allocatedMemory
+            });
 
-# Chatbot Main Loop
-while True:
-    user_input = input("You: ")
-    reply = chatbot_response(user_input)
-    if reply is None:
-        print("🤖 Chatbot: Goodbye! Have a beautiful celebration! 🎉")
-        break
-    print(f"🤖 Chatbot: {reply}\n")
+            updateDisplay();
+            sizeInput.value = '';
+        }
+
+        function garbageCollect() {
+            // Add to history before clearing
+            historyLog.push({
+                type: 'gc',
+                timestamp: new Date(),
+                totalMemory: 0
+            });
+
+            // Clear memory
+            memoryPool = [];
+            allocatedMemory = 0;
+
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            // Update memory pool display
+            const memoryDisplay = document.getElementById('memoryPool');
+            memoryDisplay.innerHTML = '';
+            memoryPool.forEach((size, index) => {
+                const block = document.createElement('div');
+                block.className = 'memory-block';
+                block.innerText = ${size}B;
+                memoryDisplay.appendChild(block);
+            });
+
+            // Update stats
+            document.getElementById('totalBlocks').textContent = memoryPool.length;
+            document.getElementById('totalMemory').textContent = ${allocatedMemory}B;
+
+            // Update history
+            const historyDisplay = document.getElementById('historyEntries');
+            historyDisplay.innerHTML = '';
+            historyLog.slice().reverse().forEach(entry => {
+                const logEntry = document.createElement('div');
+                logEntry.className = log-entry ${entry.type};
+                
+                const time = entry.timestamp.toLocaleTimeString();
+                const details = entry.type === 'allocation' 
+                    ? Allocated ${entry.size}B (Total: ${entry.totalMemory}B)
+                    : Garbage Collection performed (Freed ${entry.totalMemory}B);
+
+                logEntry.innerHTML = `
+                    <div>${time}</div>
+                    <div>${details}</div>
+                `;
+                
+                historyDisplay.appendChild(logEntry);
+            });
+        }
+    </script>
+</body>
+</html>
